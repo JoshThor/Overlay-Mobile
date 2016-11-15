@@ -223,7 +223,7 @@ public class ObjImporter : MonoBehaviour
                                 f2++;
                             }
                             j = 1;
-                            Debug.Log(brokenString.Length);
+                            //Debug.Log(brokenString.Length);
                             while (j + 2 < brokenString.Length)     //Create triangles out of the face data.  There will generally be more than 1 triangle per face.
                             {
                                 mesh.triangles[f] = intArray[0];

@@ -20,12 +20,14 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     //Bundle URL;
     private string modelURL = "http://people.sc.fsu.edu/~jburkardt/data/obj/cube.obj";
 
-    /* Models that i know work:
+    /* Models that I know work:
     Cube: http://people.sc.fsu.edu/~jburkardt/data/obj/cube.obj
     Decahedron: http://people.sc.fsu.edu/~jburkardt/data/obj/dodecahedron.obj
     Pyramid: http://people.sc.fsu.edu/~jburkardt/data/obj/pyramid.obj //Note: you have to modify ObjImporter line 45 to: newVerts[i] = newMesh.vertices[(int)v.x - 1 -1];
     Tetrahedron: http://people.sc.fsu.edu/~jburkardt/data/obj/tetrahedron.obj
     Humanoid *Works but is  a bit large*: http://people.sc.fsu.edu/~jburkardt/data/obj/humanoid_quad.obj
+    Gourd: http://people.sc.fsu.edu/~jburkardt/data/obj/gourd.obj
+    Shuttle: http://people.sc.fsu.edu/~jburkardt/data/obj/shuttle.obj
      */
 
     public ImageTargetBehaviour ImageTargetTemplate;
@@ -34,6 +36,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 
     public Material renderMaterial;
 
+    private GameObject ARO;
 
     // Use this for initialization
     void Start()
@@ -134,12 +137,14 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             spawnedPrefab.GetComponent<Renderer>().material = renderMaterial;
             spawnedPrefab.transform.parent = ImageTargetTemplate.transform;
             spawnedPrefab.transform.localPosition = Vector3.zero;
-            spawnedPrefab.transform.localScale = Vector3.one * 1;
+            spawnedPrefab.transform.localScale = Vector3.one / 2;
             spawnedPrefab.transform.localRotation = Quaternion.identity;
+
+            ARO = spawnedPrefab;
 
             Debug.Log("Model Loaded");
 
-            List<string> lines = new List<string>(fileText.Split(new string[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries));
+            /*List<string> lines = new List<string>(fileText.Split(new string[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries));
 
             using (StreamWriter sw = new StreamWriter("TestFile.txt"))
             {
@@ -149,7 +154,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
                 }
             }
 
-            /*GameObject loaded = OBJLoader.LoadOBJFile(lines, "ARO");
+            GameObject loaded = OBJLoader.LoadOBJFile(lines, "ARO");
             //foreach (Transform child in ImageTargetTemplate.transform)
           //  {
           //      Destroy(child);
@@ -169,6 +174,14 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         // so that user can restart scanning
         if (!mIsScanning)
         {
+            if(GUI.Button(new Rect(100, 225, 50, 50), "-"))
+            {
+                ARO.transform.localScale /= 2;
+            }
+            if (GUI.Button(new Rect(100, 175, 50, 50), "+"))
+            {
+                ARO.transform.localScale *= 2;
+            }
             if (GUI.Button(new Rect(100, 100, 200, 50), "Restart Scanning"))
             {
                 // Restart TargetFinder
