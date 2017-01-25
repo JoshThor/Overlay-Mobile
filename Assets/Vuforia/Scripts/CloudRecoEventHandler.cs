@@ -74,7 +74,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         ObjectTracker tracker = TrackerManager.Instance.GetTracker<ObjectTracker>();
         tracker.TargetFinder.ClearTrackables(false);
 
-        // Remove the augmentation (cube object)
+        // Remove the augmentation
         if (ImageTargetTemplate)
         {
             //Destroys any active 3D objects
@@ -96,7 +96,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         }
 
         //Fetch the Bundle URL from the metadata
-        //modelURL = targetSearchResult.MetaData;
+        modelURL = targetSearchResult.MetaData;
 
         // Build augmentation based on target
         if (ImageTargetTemplate)
@@ -106,10 +106,6 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             ImageTargetBehaviour imageTargetBehaviour = tracker.TargetFinder.EnableTracking(targetSearchResult, ImageTargetTemplate.gameObject) as ImageTargetBehaviour;
             Debug.Log("Image Recognized");
 
-           // GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-           // cube.transform.localPosition = Vector3.zero;
-           // cube.transform.localScale = Vector3.one * 20;
-           // cube.transform.localRotation = Quaternion.identity;
             StartCoroutine("DownloadObject");
         }
     }
@@ -143,28 +139,6 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             ARO = spawnedPrefab;
 
             Debug.Log("Model Loaded");
-
-            /*List<string> lines = new List<string>(fileText.Split(new string[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries));
-
-            using (StreamWriter sw = new StreamWriter("TestFile.txt"))
-            {
-                foreach (string s in lines)
-                {
-                    sw.WriteLine(s);
-                }
-            }
-
-            GameObject loaded = OBJLoader.LoadOBJFile(lines, "ARO");
-            //foreach (Transform child in ImageTargetTemplate.transform)
-          //  {
-          //      Destroy(child);
-          //  }
-            loaded.transform.parent = ImageTargetTemplate.transform;
-
-            loaded.transform.localPosition = Vector3.zero;
-            loaded.transform.localScale = Vector3.one * 20;
-            loaded.transform.localRotation = Quaternion.identity;
-            */
         }
     }
 
@@ -174,7 +148,16 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         // so that user can restart scanning
         if (!mIsScanning)
         {
-            if(GUI.Button(new Rect(100, 225, 50, 50), "-"))
+
+            if (GUI.Button(new Rect(125, 275, 50, 50), ">"))
+            {
+                ARO.transform.Translate(Vector3.right * 2);
+            }
+            if (GUI.Button(new Rect(75, 275, 50, 50), "<"))
+            {
+                ARO.transform.Translate(Vector3.left * 2);
+            }
+            if (GUI.Button(new Rect(100, 225, 50, 50), "-"))
             {
                 ARO.transform.localScale /= 2;
             }
