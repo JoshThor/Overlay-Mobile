@@ -142,6 +142,18 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         }
     }
 
+    public void OnActive(Boolean paused)
+    {
+        if(paused)
+        {
+            VuforiaBehaviour.Instance.enabled = false;
+        }
+        else
+        {
+            VuforiaBehaviour.Instance.enabled = true;
+        }
+    }
+
     void OnGUI()
     {
         // If not scanning, show button 
