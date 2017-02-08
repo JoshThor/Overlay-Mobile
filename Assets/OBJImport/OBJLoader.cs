@@ -38,7 +38,7 @@ public class OBJLoader
         {
             System.Diagnostics.Stopwatch s = new System.Diagnostics.Stopwatch();
             s.Start();
-//            LoadOBJFile(pth);
+            //LoadOBJFile(pth);
             Debug.Log("OBJ load took " + s.ElapsedMilliseconds + "ms");
             s.Stop();
         }
@@ -81,14 +81,12 @@ public class OBJLoader
 
         return null;
     }
-    public static Material[] LoadMTLFile(string fn)
+
+    public static Material[] LoadMTLFile(string fn, Texture2D image)
     {
         Material currentMaterial = null;
         List<Material> matlList = new List<Material>();
-        FileInfo mtlFileInfo = new FileInfo(fn);
-        string baseFileName = Path.GetFileNameWithoutExtension(fn);
-        string mtlFileDirectory = mtlFileInfo.Directory.FullName + Path.DirectorySeparatorChar;
-        foreach (string ln in File.ReadAllLines(fn))
+        foreach (string ln in fn.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
         {
             string l = ln.Trim().Replace("  ", " ");
             string[] cmps = l.Split(' ');
@@ -110,17 +108,15 @@ public class OBJLoader
             else if (cmps[0] == "map_Kd")
             {
                 //TEXTURE
-                string fpth = OBJGetFilePath(data, mtlFileDirectory,baseFileName);
-                if (fpth != null)
-                    currentMaterial.SetTexture("_MainTex",TextureLoader.LoadTexture(fpth));
+                if (image != null)
+                    currentMaterial.SetTexture("_MainTex",(image));
             }
             else if (cmps[0] == "map_Bump")
             {
                 //TEXTURE
-                string fpth = OBJGetFilePath(data, mtlFileDirectory,baseFileName);
-                if (fpth != null)
+                if (image != null)
                 {
-                    currentMaterial.SetTexture("_BumpMap", TextureLoader.LoadTexture(fpth, true));
+                    currentMaterial.SetTexture("_BumpMap", image);
                     currentMaterial.EnableKeyword("_NORMALMAP");
                 }
             }
@@ -170,10 +166,10 @@ public class OBJLoader
         return matlList.ToArray();
     }
 
-    public static GameObject LoadOBJFile(List<string> file, string meshName)
+    public static GameObject LoadOBJFile(string fileText, string materialText, Texture2D image, string meshName)
     {
 
-//        string meshName = Path.GetFileNameWithoutExtension(fn);
+        //string meshName = Path.GetFileNameWithoutExtension(fn);
 
         bool hasNormals = false;
         //OBJ LISTS
@@ -194,149 +190,152 @@ public class OBJLoader
         //CACHE
         Material[] materialCache = null;
         //save this info for later
-//        FileInfo OBJFileInfo = new FileInfo(fn);
-         
-        foreach (string ln in file)
+        //        FileInfo OBJFileInfo = new FileInfo(fn);
+        using (StringReader reader = new StringReader(fileText))
         {
-            if (ln.Length > 0 && ln[0] != '#')
-            {
-                string l = ln.Trim().Replace("  "," ");
-                string[] cmps = l.Split(' ');
-                string data = l.Remove(0, l.IndexOf(' ') + 1);
+            string ln;
 
-                if (cmps[0] == "mtllib")
+            while ((ln = reader.ReadLine())!= null)
+            { 
+                if (ln.Length > 0 && ln[0] != '#')
                 {
-                    //load cache
- //                   string pth = OBJGetFilePath(data, OBJFileInfo.Directory.FullName + Path.DirectorySeparatorChar, meshName);
- //                   if (pth != null)
- //                       materialCache = LoadMTLFile(pth);
+                    string l = ln.Trim().Replace("  ", " ");
+                    string[] cmps = l.Split(' ');
+                    string data = l.Remove(0, l.IndexOf(' ') + 1);
 
-                }
-                else if ((cmps[0] == "g" || cmps[0] == "o") && splitByMaterial == false)
-                {
-                    cmesh = data;
-                    if (!objectNames.Contains(cmesh))
+                    if (cmps[0] == "mtllib")
                     {
-                        objectNames.Add(cmesh);
+                        //load cache
+                        if (materialText != null)
+                            materialCache = LoadMTLFile(materialText, image);
+
                     }
-                }
-                else if (cmps[0] == "usemtl")
-                {
-                    cmaterial = data;
-                    if (!materialNames.Contains(cmaterial))
+                    else if ((cmps[0] == "g" || cmps[0] == "o") && splitByMaterial == false)
                     {
-                        materialNames.Add(cmaterial);
-                    }
-
-                    if (splitByMaterial)
-                    {
-                        if (!objectNames.Contains(cmaterial))
+                        cmesh = data;
+                        if (!objectNames.Contains(cmesh))
                         {
-                            objectNames.Add(cmaterial);
+                            objectNames.Add(cmesh);
                         }
                     }
-                }
-                else if (cmps[0] == "v")
-                {
-                    //VERTEX
-                    vertices.Add(ParseVectorFromCMPS(cmps));
-                }
-                else if (cmps[0] == "vn")
-                {
-                    //VERTEX NORMAL
-                    normals.Add(ParseVectorFromCMPS(cmps));
-                }
-                else if (cmps[0] == "vt")
-                {
-                    //VERTEX UV
-                    uvs.Add(ParseVectorFromCMPS(cmps));
-                }
-                else if (cmps[0] == "f")
-                {
-                    int[] indexes = new int[cmps.Length - 1];
-                    for (int i = 1; i < cmps.Length ; i++)
+                    else if (cmps[0] == "usemtl")
                     {
-                        string felement = cmps[i];
-                        int vertexIndex = -1;
-                        int normalIndex = -1;
-                        int uvIndex = -1;
-                        if (felement.Contains("//"))
+                        cmaterial = data;
+                        if (!materialNames.Contains(cmaterial))
                         {
-                            //doubleslash, no UVS.
-                            string[] elementComps = felement.Split('/');
-                            vertexIndex = int.Parse(elementComps[0]) - 1;
-                            normalIndex = int.Parse(elementComps[2]) - 1;
+                            materialNames.Add(cmaterial);
                         }
-                        else if (felement.Count(x => x == '/') == 2)
+
+                        if (splitByMaterial)
                         {
-                            //contains everything
-                            string[] elementComps = felement.Split('/');
-                            vertexIndex = int.Parse(elementComps[0]) - 1;
-                            uvIndex = int.Parse(elementComps[1]) - 1;
-                            normalIndex = int.Parse(elementComps[2]) - 1;
-                        }
-                        else if (!felement.Contains("/"))
-                        {
-                            //just vertex inedx
-                            vertexIndex = int.Parse(felement) - 1;
-                        }
-                        else
-                        {
-                            //vertex and uv
-                            string[] elementComps = felement.Split('/');
-                            vertexIndex = int.Parse(elementComps[0]) - 1;
-                            uvIndex = int.Parse(elementComps[1]) - 1;
-                        }
-                        string hashEntry = vertexIndex + "|" + normalIndex + "|" +uvIndex;
-                        if (hashtable.ContainsKey(hashEntry))
-                        {
-                            indexes[i - 1] = hashtable[hashEntry];
-                        }
-                        else
-                        {
-                            //create a new hash entry
-                            indexes[i - 1] = hashtable.Count;
-                            hashtable[hashEntry] = hashtable.Count;
-                            uvertices.Add(vertices[vertexIndex]);
-                            if (normalIndex < 0 || (normalIndex > (normals.Count - 1)))
+                            if (!objectNames.Contains(cmaterial))
                             {
-                                unormals.Add(Vector3.zero);
+                                objectNames.Add(cmaterial);
+                            }
+                        }
+                    }
+                    else if (cmps[0] == "v")
+                    {
+                        //VERTEX
+                        vertices.Add(ParseVectorFromCMPS(cmps));
+                    }
+                    else if (cmps[0] == "vn")
+                    {
+                        //VERTEX NORMAL
+                        normals.Add(ParseVectorFromCMPS(cmps));
+                    }
+                    else if (cmps[0] == "vt")
+                    {
+                        //VERTEX UV
+                        uvs.Add(ParseVectorFromCMPS(cmps));
+                    }
+                    else if (cmps[0] == "f")
+                    {
+                        int[] indexes = new int[cmps.Length - 1];
+                        for (int i = 1; i < cmps.Length; i++)
+                        {
+                            string felement = cmps[i];
+                            int vertexIndex = -1;
+                            int normalIndex = -1;
+                            int uvIndex = -1;
+                            if (felement.Contains("//"))
+                            {
+                                //doubleslash, no UVS.
+                                string[] elementComps = felement.Split('/');
+                                vertexIndex = int.Parse(elementComps[0]) - 1;
+                                normalIndex = int.Parse(elementComps[2]) - 1;
+                            }
+                            else if (felement.Count(x => x == '/') == 2)
+                            {
+                                //contains everything
+                                string[] elementComps = felement.Split('/');
+                                vertexIndex = int.Parse(elementComps[0]) - 1;
+                                uvIndex = int.Parse(elementComps[1]) - 1;
+                                normalIndex = int.Parse(elementComps[2]) - 1;
+                            }
+                            else if (!felement.Contains("/"))
+                            {
+                                //just vertex inedx
+                                vertexIndex = int.Parse(felement) - 1;
                             }
                             else
                             {
-                                hasNormals = true;
-                                unormals.Add(normals[normalIndex]);
+                                //vertex and uv
+                                string[] elementComps = felement.Split('/');
+                                vertexIndex = int.Parse(elementComps[0]) - 1;
+                                uvIndex = int.Parse(elementComps[1]) - 1;
                             }
-                            if (uvIndex < 0 || (uvIndex > (uvs.Count - 1)))
+                            string hashEntry = vertexIndex + "|" + normalIndex + "|" + uvIndex;
+                            if (hashtable.ContainsKey(hashEntry))
                             {
-                                uuvs.Add(Vector2.zero);
+                                indexes[i - 1] = hashtable[hashEntry];
                             }
                             else
                             {
-                                uuvs.Add(uvs[uvIndex]);
+                                //create a new hash entry
+                                indexes[i - 1] = hashtable.Count;
+                                hashtable[hashEntry] = hashtable.Count;
+                                uvertices.Add(vertices[vertexIndex]);
+                                if (normalIndex < 0 || (normalIndex > (normals.Count - 1)))
+                                {
+                                    unormals.Add(Vector3.zero);
+                                }
+                                else
+                                {
+                                    hasNormals = true;
+                                    unormals.Add(normals[normalIndex]);
+                                }
+                                if (uvIndex < 0 || (uvIndex > (uvs.Count - 1)))
+                                {
+                                    uuvs.Add(Vector2.zero);
+                                }
+                                else
+                                {
+                                    uuvs.Add(uvs[uvIndex]);
+                                }
+
                             }
-
                         }
-                    }
-                    if (indexes.Length < 5 && indexes.Length >= 3)
-                    {
-                        OBJFace f1 = new OBJFace();
-                        f1.materialName = cmaterial;
-                        f1.indexes = new int[] { indexes[0], indexes[1], indexes[2] };
-                        f1.meshName = (splitByMaterial) ? cmaterial : cmesh;
-                        faceList.Add(f1);
-                        if (indexes.Length > 3)
+                        if (indexes.Length < 5 && indexes.Length >= 3)
                         {
+                            OBJFace f1 = new OBJFace();
+                            f1.materialName = cmaterial;
+                            f1.indexes = new int[] { indexes[0], indexes[1], indexes[2] };
+                            f1.meshName = (splitByMaterial) ? cmaterial : cmesh;
+                            faceList.Add(f1);
+                            if (indexes.Length > 3)
+                            {
 
-                            OBJFace f2 = new OBJFace();
-                            f2.materialName = cmaterial;
-                            f2.meshName = (splitByMaterial) ? cmaterial : cmesh;
-                            f2.indexes = new int[] { indexes[2], indexes[3], indexes[0] };
-                            faceList.Add(f2);
+                                OBJFace f2 = new OBJFace();
+                                f2.materialName = cmaterial;
+                                f2.meshName = (splitByMaterial) ? cmaterial : cmesh;
+                                f2.indexes = new int[] { indexes[2], indexes[3], indexes[0] };
+                                faceList.Add(f2);
+                            }
                         }
                     }
                 }
-            }
+            }   
         }
 
         if (objectNames.Count == 0)

@@ -17,6 +17,8 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     private CloudRecoBehaviour mCloudRecoBehaviour;
     private bool mIsScanning = false;
 
+    public GameObject restartButton;
+
     //Bundle URL;
     private string modelURL = "http://people.sc.fsu.edu/~jburkardt/data/obj/cube.obj";
 
@@ -38,15 +40,20 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 
     private GameObject ARO;
 
+    public GameObject OBJLoader;
+
     // Use this for initialization
     void Start()
     {
+        restartButton.SetActive(false);
+
         // register this event handler at the cloud reco behaviour
         mCloudRecoBehaviour = GetComponent<CloudRecoBehaviour>();
         if (mCloudRecoBehaviour)
         {
             mCloudRecoBehaviour.RegisterEventHandler(this);
         }
+        OBJLoader = GameObject.Find("OBJLoader");
     }
 
     public void OnInitialized()
@@ -68,20 +75,26 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     {
     mIsScanning = scanning;
 
-    if (scanning)
-    {
-        // clear all known trackables
-        ObjectTracker tracker = TrackerManager.Instance.GetTracker<ObjectTracker>();
-        tracker.TargetFinder.ClearTrackables(false);
-
-        // Remove the augmentation
-        if (ImageTargetTemplate)
+        if (scanning)
         {
-            //Destroys any active 3D objects
-            if (ImageTargetTemplate.transform.childCount > 0)
-                Destroy(ImageTargetTemplate.transform.GetChild(0).gameObject);
+            // clear all known trackables
+            ObjectTracker tracker = TrackerManager.Instance.GetTracker<ObjectTracker>();
+            tracker.TargetFinder.ClearTrackables(false);
+
+            // Remove the augmentation
+            if (ImageTargetTemplate)
+            {
+                //Destroys any active 3D objects
+                if (ImageTargetTemplate.transform.childCount > 0)
+                    Destroy(ImageTargetTemplate.transform.GetChild(0).gameObject);
+
+                //OBJLoader.GetComponent<OBJ>().SetLoaded(false);
+                Destroy(OBJLoader.GetComponent<OBJ>());
+                OBJLoader.AddComponent<OBJ>();
+
+            }
         }
-    }
+
     }
 
     // Here we handle a target reco event
@@ -110,6 +123,34 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         }
     }
 
+    IEnumerator DownloadObject()
+    {
+
+
+        StartCoroutine(OBJLoader.GetComponent<OBJ>().Load(modelURL));
+        
+
+        while(!OBJLoader.GetComponent<OBJ>().IsLoaded())
+            yield return new WaitForSeconds(0.1f);
+
+        GameObject[] spawnedObjects;
+        spawnedObjects = GameObject.FindGameObjectsWithTag("ARO");
+
+        if(spawnedObjects.Length == 0)
+        {
+            Debug.Log("No game object found");
+        }
+        
+
+        foreach (GameObject g in spawnedObjects)
+        {
+            g.transform.parent = ImageTargetTemplate.transform;
+            g.transform.localPosition = Vector3.zero;
+            g.transform.localScale = Vector3.one / 2;
+            g.transform.localRotation = Quaternion.identity;
+        }
+    }
+/*
     IEnumerator DownloadObject()
     {
         //Destroys any active 3D objects
@@ -141,7 +182,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             Debug.Log("Model Loaded");
         }
     }
-
+*/
     public void OnActive(Boolean paused)
     {
         if(paused)
@@ -160,7 +201,8 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         // so that user can restart scanning
         if (!mIsScanning)
         {
-
+            restartButton.SetActive(true);
+            /*
             if (GUI.Button(new Rect(125, 275, 50, 50), ">"))
             {
                 ARO.transform.Translate(Vector3.right * 2);
@@ -177,11 +219,17 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             {
                 ARO.transform.localScale *= 2;
             }
-            if (GUI.Button(new Rect(100, 100, 200, 50), "Restart Scanning"))
-            {
-                // Restart TargetFinder
-                mCloudRecoBehaviour.CloudRecoEnabled = true;
-            }
+            */
         }
+        else
+        {
+            restartButton.SetActive(false);
+        }
+    }
+
+    public void OnRestartButton()
+    {
+        // Restart TargetFinder
+        mCloudRecoBehaviour.CloudRecoEnabled = true;
     }
 }
