@@ -63,8 +63,8 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         if (!mIsScanning)
         {
             restartButton.SetActive(true);
-            incSizeButton.SetActive(true);
-            decSizeButton.SetActive(true);
+            //incSizeButton.SetActive(true);
+            //decSizeButton.SetActive(true);
         }
         else
         {
@@ -169,7 +169,9 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         }
         if(spawnedObjects.Length == 1)
         {
+            spawnedObjects[0].AddComponent<PinchZoom>();
             ARO = spawnedObjects[0];
+            
         }
     }
 /*
@@ -215,18 +217,6 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         {
             VuforiaBehaviour.Instance.enabled = true;
         }
-    }
-
-    public void OnIncreaseSizeButton()
-    {
-        if(ARO != null)
-            ARO.transform.localScale *= 2;
-    }
-
-    public void OnDecreaseSizeButton()
-    {
-        if (ARO != null)
-            ARO.transform.localScale /= 2;
     }
 
     public void OnRestartButton()
