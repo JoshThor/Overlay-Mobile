@@ -17,7 +17,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     private CloudRecoBehaviour mCloudRecoBehaviour;
     private bool mIsScanning = false;
 
-    public GameObject restartButton;
+    public GameObject restartButton, incSizeButton, decSizeButton;
 
     //Bundle URL;
     private string modelURL = "http://people.sc.fsu.edu/~jburkardt/data/obj/cube.obj";
@@ -46,6 +46,8 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     void Start()
     {
         restartButton.SetActive(false);
+        incSizeButton.SetActive(false);
+        decSizeButton.SetActive(false);
 
         // register this event handler at the cloud reco behaviour
         mCloudRecoBehaviour = GetComponent<CloudRecoBehaviour>();
@@ -54,6 +56,22 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             mCloudRecoBehaviour.RegisterEventHandler(this);
         }
         OBJLoader = GameObject.Find("OBJLoader");
+    }
+
+    void Update()
+    {
+        if (!mIsScanning)
+        {
+            restartButton.SetActive(true);
+            incSizeButton.SetActive(true);
+            decSizeButton.SetActive(true);
+        }
+        else
+        {
+            incSizeButton.SetActive(false);
+            decSizeButton.SetActive(false);
+            restartButton.SetActive(false);
+        }
     }
 
     public void OnInitialized()
@@ -199,37 +217,16 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         }
     }
 
-    void OnGUI()
+    public void OnIncreaseSizeButton()
     {
-        // If not scanning, show button 
-        // so that user can restart scanning
-        if (!mIsScanning)
-        {
-            restartButton.SetActive(true);
-            /*
-            if (GUI.Button(new Rect(125, 275, 50, 50), ">"))
-            {
-                ARO.transform.Translate(Vector3.right * 2);
-            }
-            if (GUI.Button(new Rect(75, 275, 50, 50), "<"))
-            {
-                ARO.transform.Translate(Vector3.left * 2);
-            }
-            */
-            if (GUI.Button(new Rect(100, 325, 50, 50), "-"))
-            {
-                ARO.transform.localScale /= 2;
-            }
-            if (GUI.Button(new Rect(100, 375, 50, 50), "+"))
-            {
-                ARO.transform.localScale *= 2;
-            }
-            
-        }
-        else
-        {
-            restartButton.SetActive(false);
-        }
+        if(ARO != null)
+            ARO.transform.localScale *= 2;
+    }
+
+    public void OnDecreaseSizeButton()
+    {
+        if (ARO != null)
+            ARO.transform.localScale /= 2;
     }
 
     public void OnRestartButton()
