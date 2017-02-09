@@ -149,6 +149,10 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             g.transform.localScale = Vector3.one / 2;
             g.transform.localRotation = Quaternion.identity;
         }
+        if(spawnedObjects.Length == 1)
+        {
+            ARO = spawnedObjects[0];
+        }
     }
 /*
     IEnumerator DownloadObject()
@@ -211,15 +215,16 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             {
                 ARO.transform.Translate(Vector3.left * 2);
             }
-            if (GUI.Button(new Rect(100, 225, 50, 50), "-"))
+            */
+            if (GUI.Button(new Rect(100, 325, 50, 50), "-"))
             {
                 ARO.transform.localScale /= 2;
             }
-            if (GUI.Button(new Rect(100, 175, 50, 50), "+"))
+            if (GUI.Button(new Rect(100, 375, 50, 50), "+"))
             {
                 ARO.transform.localScale *= 2;
             }
-            */
+            
         }
         else
         {
