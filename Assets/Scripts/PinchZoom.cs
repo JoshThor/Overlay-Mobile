@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PinchZoom : MonoBehaviour {
 
-    private float rotationSpeed = 10f;
+    private float rotationSpeed = 50f;
 
 	
 	// Update is called once per frame

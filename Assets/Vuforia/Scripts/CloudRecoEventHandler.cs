@@ -17,7 +17,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     private CloudRecoBehaviour mCloudRecoBehaviour;
     private bool mIsScanning = false;
 
-    public GameObject restartButton, incSizeButton, decSizeButton;
+    public GameObject restartButton;
 
     //Bundle URL;
     private string modelURL = "http://people.sc.fsu.edu/~jburkardt/data/obj/cube.obj";
@@ -46,8 +46,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     void Start()
     {
         restartButton.SetActive(false);
-        incSizeButton.SetActive(false);
-        decSizeButton.SetActive(false);
+
 
         // register this event handler at the cloud reco behaviour
         mCloudRecoBehaviour = GetComponent<CloudRecoBehaviour>();
@@ -63,13 +62,9 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         if (!mIsScanning)
         {
             restartButton.SetActive(true);
-            //incSizeButton.SetActive(true);
-            //decSizeButton.SetActive(true);
         }
         else
         {
-            incSizeButton.SetActive(false);
-            decSizeButton.SetActive(false);
             restartButton.SetActive(false);
         }
     }
@@ -91,7 +86,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 
     public void OnStateChanged(bool scanning)
     {
-    mIsScanning = scanning;
+        mIsScanning = scanning;
 
         if (scanning)
         {
