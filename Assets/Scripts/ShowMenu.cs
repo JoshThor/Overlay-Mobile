@@ -12,8 +12,6 @@ public class ShowMenu : MonoBehaviour {
 
     private bool menuActive = false;
 
-    private GameObject cloudRecoGameObject;
-
     private Vector3 menuButtonInitPos, menuPanelInitPos;
 
     // Use this for initialization
@@ -22,8 +20,6 @@ public class ShowMenu : MonoBehaviour {
         menuButtonInitPos = menuButton.GetComponent<RectTransform>().localPosition;
         menuPanelInitPos = menuPanel.GetComponent<RectTransform>().localPosition;
 
-        cloudRecoGameObject = GameObject.Find("CloudRecgonition");
-
         if(debugMode)
         {
             Debug.Log("Menu Button:" + menuButtonInitPos);
@@ -31,9 +27,25 @@ public class ShowMenu : MonoBehaviour {
         }
 
     }
-/*
+
     void Update()
     {
+
+#if UNITY_ANDROID
+        if (menuActive)
+        {
+            if(Input.GetKeyDown(KeyCode.Escape))
+            {
+                OnButtonClick();
+            }
+                    
+        }
+        else if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
+#endif
+        /*
         float menuX = menuPanel.GetComponent<RectTransform>().localPosition.x;
         if (menuX > menuPanelEndPosition.x)
         {
@@ -79,20 +91,14 @@ public class ShowMenu : MonoBehaviour {
                 
             }
            
-        }
+        }*/
     }
-*/
+
     public void OnButtonClick()
     {
 
         if (!menuActive)
         {
-            if (cloudRecoGameObject != null)
-            {
-                cloudRecoGameObject.GetComponent<CloudRecoEventHandler>().OnActive(false);
-                Debug.Log("Paused");
-            }
-            //maybe use exact positions
             menuActive = true;
             iTween.MoveTo(menuButton.gameObject, iTween.Hash("islocal", true, "position", menuButtonEndPosition, "speed", menuSpeed));
             iTween.MoveTo(menuPanel.gameObject, iTween.Hash("islocal", true, "position", menuPanelEndPosition, "speed", menuSpeed));
@@ -100,11 +106,6 @@ public class ShowMenu : MonoBehaviour {
         }
         else
         {
-            if (cloudRecoGameObject != null)
-            {
-                cloudRecoGameObject.GetComponent<CloudRecoEventHandler>().OnActive(true);
-                Debug.Log("Active");
-            }
             menuActive = false;
             iTween.MoveTo(menuButton.gameObject, iTween.Hash("islocal", true, "position", menuButtonInitPos, "speed", menuSpeed));
             iTween.MoveTo(menuPanel.gameObject, iTween.Hash("islocal", true, "position", menuPanelInitPos, "speed", menuSpeed));

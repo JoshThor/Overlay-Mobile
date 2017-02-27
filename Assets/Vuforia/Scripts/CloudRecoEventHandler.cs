@@ -17,6 +17,8 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     private CloudRecoBehaviour mCloudRecoBehaviour;
     private bool mIsScanning = false;
 
+    private bool menuActive = false;
+
     public GameObject restartButton;
 
     //Bundle URL;
@@ -59,7 +61,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 
     void Update()
     {
-        if (!mIsScanning)
+        if (!mIsScanning && !menuActive)
         {
             restartButton.SetActive(true);
         }
@@ -82,6 +84,30 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     public void OnUpdateError(TargetFinder.UpdateState updateError)
     {
     // handle error
+    }
+
+    public void OnMenuButton()
+    {
+
+        if(!menuActive)
+        {
+            menuActive = true;
+
+            mCloudRecoBehaviour.CloudRecoEnabled = false;
+
+            TrackerManager.Instance.GetTracker<ObjectTracker>().Stop();
+
+        }
+        else
+        {
+            menuActive = false;
+
+            mCloudRecoBehaviour.CloudRecoEnabled = true;
+
+            TrackerManager.Instance.GetTracker<ObjectTracker>().Start();
+
+        }
+
     }
 
     public void OnStateChanged(bool scanning)
@@ -158,14 +184,21 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         foreach (GameObject g in spawnedObjects)
         {
             g.transform.parent = ImageTargetTemplate.transform;
-            g.transform.localPosition = Vector3.zero;
-            g.transform.localScale = Vector3.one / 2;
+
+           // Vector3 loadedPosition = g.GetComponent<Renderer>().bounds.center;
+            // Debug.Log(loadedPosition);
+            //Debug.Log(g.transform.localPosition);
+            g.transform.position = Vector3.zero;
+            g.AddComponent<SetMeshBounds>();
+            //g.transform.localPosition = Vector3.zero;
+            g.transform.localScale = Vector3.one / 4;
             g.transform.localRotation = Quaternion.identity;
         }
         if(spawnedObjects.Length == 1)
         {
             spawnedObjects[0].AddComponent<PinchZoom>();
             ARO = spawnedObjects[0];
+            ARO.transform.localPosition = Vector3.zero;
             
         }
     }
@@ -202,17 +235,6 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         }
     }
 */
-    public void OnActive(Boolean paused)
-    {
-        if(paused)
-        {
-            VuforiaBehaviour.Instance.enabled = false;
-        }
-        else
-        {
-            VuforiaBehaviour.Instance.enabled = true;
-        }
-    }
 
     public void OnRestartButton()
     {

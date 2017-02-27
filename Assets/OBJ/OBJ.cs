@@ -125,6 +125,7 @@ public class OBJ : MonoBehaviour
                         if (loader.error != null)
                         {
                             Debug.LogError(loader.error);
+                            Debug.Log("At Path: " + texpath);
                         }
                         else {
                             m.diffuseTex = GetTexture(loader);
@@ -140,6 +141,7 @@ public class OBJ : MonoBehaviour
                         if (loader.error != null)
                         {
                             Debug.LogError(loader.error);
+                            Debug.Log("At Path: " + texpath);
                         }
                         else {
                             m.bumpTex = GetTexture(loader);
