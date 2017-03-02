@@ -6,11 +6,13 @@ public class ShowMenu : MonoBehaviour {
 
     public RectTransform menuPanel;
     public Button menuButton;
+    public GameObject settingsPanel;
     public Vector3 menuButtonEndPosition, menuPanelEndPosition;
     public bool debugMode;
     public int menuSpeed;
 
     private bool menuActive = false;
+    private bool settingsMenuActive = false;
 
     private Vector3 menuButtonInitPos, menuPanelInitPos;
 
@@ -19,6 +21,8 @@ public class ShowMenu : MonoBehaviour {
     {
         menuButtonInitPos = menuButton.GetComponent<RectTransform>().localPosition;
         menuPanelInitPos = menuPanel.GetComponent<RectTransform>().localPosition;
+
+        settingsPanel.SetActive(false);
 
         if(debugMode)
         {
@@ -36,7 +40,14 @@ public class ShowMenu : MonoBehaviour {
         {
             if(Input.GetKeyDown(KeyCode.Escape))
             {
-                OnButtonClick();
+                if (!settingsMenuActive)
+                {
+                    OnMenuButtonClick();
+                }
+                else
+                {
+                    OnSettingsMenuClick();
+                }
             }
                     
         }
@@ -94,7 +105,7 @@ public class ShowMenu : MonoBehaviour {
         }*/
     }
 
-    public void OnButtonClick()
+    public void OnMenuButtonClick()
     {
 
         if (!menuActive)
@@ -111,4 +122,19 @@ public class ShowMenu : MonoBehaviour {
             iTween.MoveTo(menuPanel.gameObject, iTween.Hash("islocal", true, "position", menuPanelInitPos, "speed", menuSpeed));
         }
     }
+
+    public void OnSettingsMenuClick()
+    {
+        if(!settingsMenuActive)
+        {
+            settingsPanel.SetActive(true);
+            settingsMenuActive = true;
+        }
+        else
+        {
+            settingsPanel.SetActive(false);
+            settingsMenuActive = false;
+        }
+    }
+
 }

@@ -1,9 +1,4 @@
-﻿/*==============================================================================
-Copyright (c) 2013 QUALCOMM Austria Research Center GmbH.
-All Rights Reserved.
-Confidential and Proprietary - QUALCOMM Austria Research Center GmbH.
-==============================================================================*/
-
+﻿
 using UnityEngine;
 using System.Collections;
 using Vuforia;
@@ -15,11 +10,27 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 {
 
     private CloudRecoBehaviour mCloudRecoBehaviour;
-    private bool mIsScanning = false;
 
-    private bool menuActive = false;
+
+    public ImageTargetBehaviour ImageTargetTemplate;
+
+    public GameObject emptyPrefabWithMeshRenderer;
+
+    public Material renderMaterial;
+
+    private GameObject ARO;
+
+    public GameObject OBJLoader;
 
     public GameObject restartButton;
+
+    private bool pinchToZoom;
+    private bool targetFound = false;
+    private bool tapToScan = false;
+    private bool mIsScanning = false;
+    private bool menuActive = false;
+
+
 
     //Bundle URL;
     private string modelURL = "http://people.sc.fsu.edu/~jburkardt/data/obj/cube.obj";
@@ -34,21 +45,12 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     Shuttle: http://people.sc.fsu.edu/~jburkardt/data/obj/shuttle.obj
      */
 
-    public ImageTargetBehaviour ImageTargetTemplate;
-
-    public GameObject emptyPrefabWithMeshRenderer;
-
-    public Material renderMaterial;
-
-    private GameObject ARO;
-
-    public GameObject OBJLoader;
-
     // Use this for initialization
     void Start()
     {
         restartButton.SetActive(false);
 
+        pinchToZoom = true;
 
         // register this event handler at the cloud reco behaviour
         mCloudRecoBehaviour = GetComponent<CloudRecoBehaviour>();
@@ -78,12 +80,25 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 
     public void OnInitError(TargetFinder.InitState initError)
     {
-    // handle error
+        //Debug.Log("Cloud Reco initialization Error: "+initError.ToString());
     }
 
     public void OnUpdateError(TargetFinder.UpdateState updateError)
     {
-    // handle error
+        //Debug.Log("Cloud Reco update Error: " + updateError.ToString());
+    }
+
+    public void SetTapToZoom(bool active)
+    {
+        tapToScan = active;
+
+        //if true set tap to scan button to active
+    }
+
+    public void SetPinchToZoom(bool active)
+    {
+        pinchToZoom = active;
+        //Debug.Log("Toggled: "+active);
     }
 
     public void OnMenuButton()
@@ -131,6 +146,9 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
                 Destroy(OBJLoader.GetComponent<OBJ>());
                 OBJLoader.AddComponent<OBJ>();
 
+
+                //re-enable tap to scan
+
             }
         }
 
@@ -139,8 +157,14 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     // Here we handle a target reco event
     public void OnNewSearchResult(TargetFinder.TargetSearchResult targetSearchResult)
     {
+
+        //Target found
+        //targetFound = true;
+
         // stop the target finder
         mCloudRecoBehaviour.CloudRecoEnabled = false;
+
+        //disable tap to scan button
 
         if(targetSearchResult.MetaData == null)
         {
@@ -194,9 +218,13 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             g.transform.localScale = Vector3.one / 4;
             g.transform.localRotation = Quaternion.identity;
         }
-        if(spawnedObjects.Length == 1)
+        if (spawnedObjects.Length == 1)
         {
-            spawnedObjects[0].AddComponent<PinchZoom>();
+            if (pinchToZoom)
+            { 
+                spawnedObjects[0].AddComponent<PinchZoom>();
+            }
+
             ARO = spawnedObjects[0];
             ARO.transform.localPosition = Vector3.zero;
             
@@ -241,4 +269,27 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         // Restart TargetFinder
         mCloudRecoBehaviour.CloudRecoEnabled = true;
     }
+
+    /*
+    public void OnTapToScan()
+    {
+        if (!mIsScanning && tapToScan)
+        {
+            StartCoroutine("ScanImage");
+        }
+        else
+        {
+            Debug.Log("Already scanning or tap to scan not enabled");
+        }
+    }
+
+    IEnumerator ScanImage()
+    {
+        mCloudRecoBehaviour.CloudRecoEnabled = true;
+        //Disable button
+        yield return new WaitForSeconds(30);
+        mCloudRecoBehaviour.CloudRecoEnabled = false;
+        //re-enable button
+    }
+    */
 }
