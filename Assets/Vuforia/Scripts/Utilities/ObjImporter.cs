@@ -59,7 +59,7 @@ public class ObjImporter : MonoBehaviour
         mesh.triangles = newMesh.triangles;
 
         mesh.RecalculateBounds();
-        mesh.Optimize();
+        ;
 
         return mesh;
     }
