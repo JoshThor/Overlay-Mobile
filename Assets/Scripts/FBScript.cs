@@ -10,9 +10,10 @@ public class FBScript : MonoBehaviour {
     public GameObject dialogueLoggedOut;
     public GameObject dialogueDisplayName;
     public GameObject profilePicture;
+    public GameObject loggoutButton;
 
-	// Use this for initialization
-	void Awake()
+    // Use this for initialization
+    void Awake()
     {
         if (!FB.IsInitialized)
         {
@@ -111,6 +112,7 @@ public class FBScript : MonoBehaviour {
         {
             dialogueLoggedIn.SetActive(true);
             dialogueLoggedOut.SetActive(false);
+            loggoutButton.SetActive(true);
 
             FB.API("/me?fields=first_name", HttpMethod.GET, DisplayName);
             FB.API("/me/picture?type=square&height=256&width=256", HttpMethod.GET, DisplayprofilePicture);
@@ -119,6 +121,7 @@ public class FBScript : MonoBehaviour {
         {
             dialogueLoggedIn.SetActive(false);
             dialogueLoggedOut.SetActive(true);
+            loggoutButton.SetActive(false);
         }
     }
 

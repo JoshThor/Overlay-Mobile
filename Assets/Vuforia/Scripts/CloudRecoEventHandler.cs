@@ -5,6 +5,7 @@ using Vuforia;
 using System.Collections.Generic;
 using System;
 using System.IO;
+using UnityEngine.UI;
 
 public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 {
@@ -15,7 +16,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     public ImageTargetBehaviour ImageTargetTemplate;
 
     public GameObject emptyPrefabWithMeshRenderer;
-
+    
     public Material renderMaterial;
 
     private GameObject ARO;
@@ -23,6 +24,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     public GameObject OBJLoader;
 
     public GameObject restartButton;
+    public GameObject scanButton;
 
     private bool pinchToZoom;
     private bool targetFound = false;
@@ -48,16 +50,20 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     // Use this for initialization
     void Start()
     {
-        restartButton.SetActive(false);
-
-        pinchToZoom = true;
-
         // register this event handler at the cloud reco behaviour
         mCloudRecoBehaviour = GetComponent<CloudRecoBehaviour>();
+
         if (mCloudRecoBehaviour)
         {
             mCloudRecoBehaviour.RegisterEventHandler(this);
         }
+
+        restartButton.SetActive(false);
+
+        SetPinchToZoom(true);
+
+        SetTapToScan(false);
+
         OBJLoader = GameObject.Find("OBJLoader");
     }
 
@@ -65,11 +71,22 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     {
         if (!mIsScanning && !menuActive)
         {
-            restartButton.SetActive(true);
+            if(tapToScan && !targetFound)
+            {
+                restartButton.SetActive(false);
+                scanButton.GetComponent<Button>().interactable = true;
+            }
+            else
+            {
+                scanButton.GetComponent<Button>().interactable = false;
+                restartButton.SetActive(true);
+            }
         }
         else
         {
+
             restartButton.SetActive(false);
+  
         }
     }
 
@@ -88,9 +105,22 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         //Debug.Log("Cloud Reco update Error: " + updateError.ToString());
     }
 
-    public void SetTapToZoom(bool active)
+    public void SetTapToScan(bool active)
     {
         tapToScan = active;
+
+        scanButton.SetActive(active);
+
+        if(active)
+        {
+            Debug.Log("Scanning disabled...");
+            mCloudRecoBehaviour.CloudRecoEnabled = false;
+        }
+        else
+        {
+            Debug.Log("Scanning Enabled...");
+            mCloudRecoBehaviour.CloudRecoEnabled = true;
+        }
 
         //if true set tap to scan button to active
     }
@@ -117,7 +147,9 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         {
             menuActive = false;
 
-            mCloudRecoBehaviour.CloudRecoEnabled = true;
+            //If tap to scan is turned on we dont want it to activate the scanning again
+            if(!tapToScan)
+                mCloudRecoBehaviour.CloudRecoEnabled = true;
 
             TrackerManager.Instance.GetTracker<ObjectTracker>().Start();
 
@@ -129,7 +161,29 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     {
         mIsScanning = scanning;
 
-        if (scanning)
+        if (scanning && targetFound && tapToScan)
+        {
+            // clear all known trackables
+            ObjectTracker tracker = TrackerManager.Instance.GetTracker<ObjectTracker>();
+            tracker.TargetFinder.ClearTrackables(false);
+
+            // Remove the augmentation
+            if (ImageTargetTemplate)
+            {
+                //Destroys any active 3D objects
+                if (ImageTargetTemplate.transform.childCount > 0)
+                    Destroy(ImageTargetTemplate.transform.GetChild(0).gameObject);
+
+                Destroy(OBJLoader.GetComponent<OBJ>());
+                OBJLoader.AddComponent<OBJ>();
+
+                //re-enable tap to scan
+                targetFound = false;
+
+                OnStateChanged(false);
+            }
+        }
+        else if (!tapToScan && scanning)
         {
             // clear all known trackables
             ObjectTracker tracker = TrackerManager.Instance.GetTracker<ObjectTracker>();
@@ -143,15 +197,14 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
                     Destroy(ImageTargetTemplate.transform.GetChild(0).gameObject);
 
                 //OBJLoader.GetComponent<OBJ>().SetLoaded(false);
-                Destroy(OBJLoader.GetComponent<OBJ>());
+                DestroyImmediate(OBJLoader.GetComponent<OBJ>(), true);
                 OBJLoader.AddComponent<OBJ>();
 
 
                 //re-enable tap to scan
-
             }
-        }
 
+        }
     }
 
     // Here we handle a target reco event
@@ -159,7 +212,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     {
 
         //Target found
-        //targetFound = true;
+        targetFound = true;
 
         // stop the target finder
         mCloudRecoBehaviour.CloudRecoEnabled = false;
@@ -189,10 +242,8 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     IEnumerator DownloadObject()
     {
 
-
         StartCoroutine(OBJLoader.GetComponent<OBJ>().Load(modelURL));
         
-
         while(!OBJLoader.GetComponent<OBJ>().IsLoaded())
             yield return new WaitForSeconds(0.1f);
 
@@ -267,14 +318,21 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     public void OnRestartButton()
     {
         // Restart TargetFinder
-        mCloudRecoBehaviour.CloudRecoEnabled = true;
+        if (!tapToScan)
+        {
+            mCloudRecoBehaviour.CloudRecoEnabled = true;
+        }
+        else
+        {
+            OnStateChanged(true);
+        }
     }
 
-    /*
+
     public void OnTapToScan()
     {
         if (!mIsScanning && tapToScan)
-        {
+        {   
             StartCoroutine("ScanImage");
         }
         else
@@ -287,9 +345,12 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     {
         mCloudRecoBehaviour.CloudRecoEnabled = true;
         //Disable button
-        yield return new WaitForSeconds(30);
+        scanButton.GetComponent<Button>().interactable = false;
+
+        yield return new WaitForSeconds(5);
+
         mCloudRecoBehaviour.CloudRecoEnabled = false;
         //re-enable button
+        scanButton.GetComponent<Button>().interactable = true;
     }
-    */
 }
