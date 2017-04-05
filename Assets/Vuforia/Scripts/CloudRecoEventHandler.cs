@@ -97,12 +97,12 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 
     public void OnInitError(TargetFinder.InitState initError)
     {
-        //Debug.Log("Cloud Reco initialization Error: "+initError.ToString());
+        Debug.Log("Cloud Reco initialization Error: "+initError.ToString());
     }
 
     public void OnUpdateError(TargetFinder.UpdateState updateError)
     {
-        //Debug.Log("Cloud Reco update Error: " + updateError.ToString());
+        Debug.Log("Cloud Reco update Error: " + updateError.ToString());
     }
 
     public void SetTapToScan(bool active)
@@ -137,6 +137,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         if(!menuActive)
         {
             menuActive = true;
+            OBJLoader.SetActive(false);
 
             mCloudRecoBehaviour.CloudRecoEnabled = false;
 
@@ -146,9 +147,10 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         else
         {
             menuActive = false;
+            OBJLoader.SetActive(true);
 
             //If tap to scan is turned on we dont want it to activate the scanning again
-            if(!tapToScan)
+            if (!tapToScan)
                 mCloudRecoBehaviour.CloudRecoEnabled = true;
 
             TrackerManager.Instance.GetTracker<ObjectTracker>().Start();
@@ -243,8 +245,10 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     {
 
         StartCoroutine(OBJLoader.GetComponent<OBJ>().Load(modelURL));
-        
-        while(!OBJLoader.GetComponent<OBJ>().IsLoaded())
+
+        OBJLoader.GetComponent<TouchObject>().SetURL("http://www.google.com");
+
+        while (!OBJLoader.GetComponent<OBJ>().IsLoaded())
             yield return new WaitForSeconds(0.1f);
 
         GameObject[] spawnedObjects;
@@ -275,6 +279,8 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             { 
                 spawnedObjects[0].AddComponent<PinchZoom>();
             }
+
+            spawnedObjects[0].AddComponent<MeshCollider>();
 
             ARO = spawnedObjects[0];
             ARO.transform.localPosition = Vector3.zero;

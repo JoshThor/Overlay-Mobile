@@ -97,8 +97,8 @@ public class VRIntegrationHelper : MonoBehaviour
 
                 // read back the projection matrices set by Vuforia and set them to the stereo cameras
                 // not sure if the matrices would automatically propagate between the left and right, so setting it explicitly twice
-                mLeftCamera.SetStereoProjectionMatrices(mLeftCamera.projectionMatrix, mRightCamera.projectionMatrix);
-                mRightCamera.SetStereoProjectionMatrices(mLeftCamera.projectionMatrix, mRightCamera.projectionMatrix);
+                //mLeftCamera.SetStereoProjectionMatrices(mLeftCamera.projectionMatrix, mRightCamera.projectionMatrix);
+                //mRightCamera.SetStereoProjectionMatrices(mLeftCamera.projectionMatrix, mRightCamera.projectionMatrix);
 
 #endif
                 // reset the left camera
