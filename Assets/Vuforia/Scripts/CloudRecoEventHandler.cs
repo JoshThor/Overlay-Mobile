@@ -32,6 +32,8 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     private bool mIsScanning = false;
     private bool menuActive = false;
 
+    private string objectURL = "http://www.google.com";
+
 
 
     //Bundle URL;
@@ -227,7 +229,10 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         }
 
         //Fetch the Bundle URL from the metadata
-        modelURL = targetSearchResult.MetaData;
+
+        string[] metadata = targetSearchResult.MetaData.Split(' ');
+        modelURL = metadata[0];
+        objectURL = metadata[1];
 
         // Build augmentation based on target
         if (ImageTargetTemplate)
@@ -246,7 +251,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 
         StartCoroutine(OBJLoader.GetComponent<OBJ>().Load(modelURL));
 
-        OBJLoader.GetComponent<TouchObject>().SetURL("http://www.google.com");
+        OBJLoader.GetComponent<TouchObject>().SetURL(objectURL);
 
         while (!OBJLoader.GetComponent<OBJ>().IsLoaded())
             yield return new WaitForSeconds(0.1f);
