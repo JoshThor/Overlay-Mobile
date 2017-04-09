@@ -32,7 +32,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     private bool mIsScanning = false;
     private bool menuActive = false;
 
-    private string objectURL = "http://www.google.com";
+    private string objectURL = "";
 
 
 
@@ -232,7 +232,12 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 
         string[] metadata = targetSearchResult.MetaData.Split(' ');
         modelURL = metadata[0];
-        objectURL = metadata[1];
+        if (metadata.Length > 1)
+            objectURL = metadata[1];
+        else {
+            Debug.Log("Did not find object click URL");
+
+        }
 
         // Build augmentation based on target
         if (ImageTargetTemplate)

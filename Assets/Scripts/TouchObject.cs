@@ -45,7 +45,9 @@ public class TouchObject : MonoBehaviour {
         if (Physics.Raycast(ray, out rhit, 1000.0f))
         {
             Debug.Log("Object clicked...");
-            Application.OpenURL(URL);
+
+            if(URL != "")
+                Application.OpenURL(URL);
         }
 
     }
