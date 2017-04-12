@@ -233,10 +233,12 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         string[] metadata = targetSearchResult.MetaData.Split(' ');
         modelURL = metadata[0];
         if (metadata.Length > 1)
+        {
             objectURL = metadata[1];
+            Debug.Log("Found Object Click-able URL: "+objectURL);
+        }
         else {
             Debug.Log("Did not find object click URL");
-
         }
 
         // Build augmentation based on target

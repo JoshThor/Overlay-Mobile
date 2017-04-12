@@ -440,8 +440,8 @@ public class OBJ : MonoBehaviour
                 shaderName = (md.bumpTex != null) ? BUMPED_SPECULAR_SHADER : SPECULAR_SHADER;
             }
             m = new Material(Shader.Find(shaderName));
-            m.SetColor("_SpecColor", md.specular);
-            m.SetFloat("_Shininess", md.shininess);
+            //m.SetColor("_SpecColor", md.specular);
+            //m.SetFloat("_Shininess", md.shininess);
         }
         else {
             if (useLegacyShaders)
