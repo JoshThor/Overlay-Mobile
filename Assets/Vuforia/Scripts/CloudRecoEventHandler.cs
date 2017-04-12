@@ -174,9 +174,16 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             // Remove the augmentation
             if (ImageTargetTemplate)
             {
+                Debug.Log(ImageTargetTemplate.transform.childCount);
                 //Destroys any active 3D objects
                 if (ImageTargetTemplate.transform.childCount > 0)
-                    Destroy(ImageTargetTemplate.transform.GetChild(0).gameObject);
+                {
+                    foreach (Transform child in ImageTargetTemplate.transform)
+                    {
+                        Debug.Log("Deleteing: "+ child.name);
+                        Destroy(child.gameObject);
+                    }
+                }
 
                 Destroy(OBJLoader.GetComponent<OBJ>());
                 OBJLoader.AddComponent<OBJ>();
@@ -196,9 +203,16 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             // Remove the augmentation
             if (ImageTargetTemplate)
             {
+                //Debug.Log(ImageTargetTemplate.transform.childCount);
                 //Destroys any active 3D objects
                 if (ImageTargetTemplate.transform.childCount > 0)
-                    Destroy(ImageTargetTemplate.transform.GetChild(0).gameObject);
+                {
+                    foreach (Transform child in ImageTargetTemplate.transform)
+                    {
+                        Debug.Log("Deleteing: " + child.name);
+                        Destroy(child.gameObject);
+                    }
+                }
 
                 //OBJLoader.GetComponent<OBJ>().SetLoaded(false);
                 DestroyImmediate(OBJLoader.GetComponent<OBJ>(), true);
@@ -258,6 +272,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 
         StartCoroutine(OBJLoader.GetComponent<OBJ>().Load(modelURL));
 
+        Debug.Log("Object Tap URL: " + objectURL);
         OBJLoader.GetComponent<TouchObject>().SetURL(objectURL);
 
         while (!OBJLoader.GetComponent<OBJ>().IsLoaded())
@@ -284,16 +299,16 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             //g.transform.localPosition = Vector3.zero;
             g.transform.localScale = Vector3.one / 4;
             g.transform.localRotation = Quaternion.identity;
+
+            if (pinchToZoom)
+            {
+                g.AddComponent<PinchZoom>();
+            }
+
+            g.AddComponent<MeshCollider>();
         }
         if (spawnedObjects.Length == 1)
         {
-            if (pinchToZoom)
-            { 
-                spawnedObjects[0].AddComponent<PinchZoom>();
-            }
-
-            spawnedObjects[0].AddComponent<MeshCollider>();
-
             ARO = spawnedObjects[0];
             ARO.transform.localPosition = Vector3.zero;
             

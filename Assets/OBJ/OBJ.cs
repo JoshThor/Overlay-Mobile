@@ -416,7 +416,7 @@ public class OBJ : MonoBehaviour
                     BumpParameter(current, p);
                     break;
                 case ILLUM:
-                    current.illumType = ci(p[1]);
+                    Debug.Log("illum " + ci(p[1]) + " Ignored");
                     break;
                 default:
                     Debug.Log("this line was not processed :" + l);
