@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.UI;
 using System;
+using UnityEngine.EventSystems;
 
 public class ShowMenu : MonoBehaviour {
 
@@ -37,6 +38,30 @@ public class ShowMenu : MonoBehaviour {
     void Update()
     {
 
+        if(menuActive && !settingsMenuActive)
+        {
+            //Get click outside of UI panel
+            foreach (Touch touch in Input.touches)
+            {
+                int pointerID = touch.fingerId;
+                if (EventSystem.current.IsPointerOverGameObject(pointerID))
+                {
+                    // at least one touch is over a canvas UI
+                    return;
+                }
+
+                if (touch.phase == TouchPhase.Ended)
+                {
+                    // here we don't know if the touch was over an canvas UI
+                    return;
+                }
+
+                //outside menu clicked
+                OnMenuButtonClick();
+
+            }
+        }
+
 #if UNITY_ANDROID
         if (menuActive)
         {
@@ -51,7 +76,7 @@ public class ShowMenu : MonoBehaviour {
                     OnSettingsMenuClick();
                 }
             }
-                    
+
         }
         else if (Input.GetKeyDown(KeyCode.Escape))
         {
