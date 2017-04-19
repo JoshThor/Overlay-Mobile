@@ -180,16 +180,13 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
                 {
                     foreach (Transform child in ImageTargetTemplate.transform)
                     {
-                        Debug.Log("Deleteing: "+ child.name);
+                        //Debug.Log("Deleteing: "+ child.name);
                         Destroy(child.gameObject);
                     }
                 }
 
                 Destroy(OBJLoader.GetComponent<OBJ>());
                 OBJLoader.AddComponent<OBJ>();
-
-                //re-enable tap to scan
-                targetFound = false;
 
                 OnStateChanged(false);
             }
@@ -213,11 +210,8 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
                         Destroy(child.gameObject);
                     }
                 }
-
-                //OBJLoader.GetComponent<OBJ>().SetLoaded(false);
                 DestroyImmediate(OBJLoader.GetComponent<OBJ>(), true);
                 OBJLoader.AddComponent<OBJ>();
-
 
                 //re-enable tap to scan
             }
@@ -229,15 +223,13 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
     public void OnNewSearchResult(TargetFinder.TargetSearchResult targetSearchResult)
     {
 
-        //Target found
-        targetFound = true;
-
         // stop the target finder
         mCloudRecoBehaviour.CloudRecoEnabled = false;
 
-        //disable tap to scan button
+        //Target found
+        targetFound = true;
 
-        if(targetSearchResult.MetaData == null)
+        if (targetSearchResult.MetaData == null)
         {
             return;
         }
@@ -249,7 +241,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         if (metadata.Length > 1)
         {
             objectURL = metadata[1];
-            Debug.Log("Found Object Click-able URL: "+objectURL);
+            Debug.Log("Found Object Click-able URL: " + objectURL);
         }
         else {
             Debug.Log("Did not find object click URL");
@@ -314,39 +306,6 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             
         }
     }
-/*
-    IEnumerator DownloadObject()
-    {
-        //Destroys any active 3D objects
-        if (ImageTargetTemplate.transform.childCount > 0)
-            Destroy(ImageTargetTemplate.transform.GetChild(0).gameObject);
-
-        // Load the 3D Object file from the specified URL
-        using (WWW www = new WWW(modelURL))
-        {
-            yield return www;
-            if (www.error != null)
-                throw new UnityException("WWW download had an error:" + www.error);
-
-            string fileText = www.text;
-
-
-            GameObject spawnedPrefab;
-            Mesh importedMesh = ObjImporter.ImportFile(fileText, "ARO");
-            spawnedPrefab = Instantiate(emptyPrefabWithMeshRenderer, transform.position, transform.rotation) as GameObject;
-            spawnedPrefab.GetComponent<MeshFilter>().mesh = importedMesh;
-            spawnedPrefab.GetComponent<Renderer>().material = renderMaterial;
-            spawnedPrefab.transform.parent = ImageTargetTemplate.transform;
-            spawnedPrefab.transform.localPosition = Vector3.zero;
-            spawnedPrefab.transform.localScale = Vector3.one / 2;
-            spawnedPrefab.transform.localRotation = Quaternion.identity;
-
-            ARO = spawnedPrefab;
-
-            Debug.Log("Model Loaded");
-        }
-    }
-*/
 
     public void OnRestartButton()
     {
@@ -354,17 +313,19 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         if (!tapToScan)
         {
             mCloudRecoBehaviour.CloudRecoEnabled = true;
+            targetFound = true;
         }
         else
         {
             OnStateChanged(true);
+            targetFound = false;
         }
     }
 
 
     public void OnTapToScan()
     {
-        if (!mIsScanning && tapToScan)
+        if (!mIsScanning && tapToScan && !targetFound)
         {   
             StartCoroutine("ScanImage");
         }
@@ -380,9 +341,12 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         //Disable button
         scanButton.GetComponent<Button>().interactable = false;
 
+        Debug.Log("Scanning On");
+
         yield return new WaitForSeconds(5);
 
         mCloudRecoBehaviour.CloudRecoEnabled = false;
+        Debug.Log("Scanning Off");
         //re-enable button
         scanButton.GetComponent<Button>().interactable = true;
     }
